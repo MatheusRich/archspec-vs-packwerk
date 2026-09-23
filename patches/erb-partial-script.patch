@@ -1,0 +1,58 @@
+From 15119129f5c5ead0ac03d33659835627effa0223 Mon Sep 17 00:00:00 2001
+From: Matheus Richard <matheusrichardt@gmail.com>
+Date: Wed, 23 Sep 2026 15:36:11 -0300
+Subject: [PATCH] Parse extracted ERB as a partial script
+
+Layouts and partials call `yield` at the top level of the template.
+Herb extracts that call as top-level Ruby, and Prism rejects it with
+"Invalid yield". On the pinned Fizzy checkout, this gave 23
+`parser.syntax` violations, one for each template that yields.
+
+Prism has a `partial_script` option for this case. It accepts
+top-level `yield` and does not change the parse of other code. With
+the option, the Fizzy templates parse with no errors, and the counts
+of the other rules do not change.
+---
+ lib/archspec/sources/erb.rb |  2 +-
+ test/erb_source_test.rb     | 12 ++++++++++++
+ 2 files changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/lib/archspec/sources/erb.rb b/lib/archspec/sources/erb.rb
+index d7d80a2..12b4da8 100644
+--- a/lib/archspec/sources/erb.rb
++++ b/lib/archspec/sources/erb.rb
+@@ -17,7 +17,7 @@ module ArchSpec
+ 
+       def parse_file
+         source = File.read(path)
+-        Prism.parse(Herb.extract_ruby(source), filepath: path).tap do |parsed|
++        Prism.parse(Herb.extract_ruby(source), filepath: path, partial_script: true).tap do |parsed|
+           @prism = parsed.value
+           @comments = parsed.comments.map { |comment| Comment.from_prism(comment) }
+           collect_erb_comments(source)
+diff --git a/test/erb_source_test.rb b/test/erb_source_test.rb
+index 6b87ae6..15e85cc 100644
+--- a/test/erb_source_test.rb
++++ b/test/erb_source_test.rb
+@@ -43,6 +43,18 @@ class ErbSourceTest < ArchSpecTest
+     end
+   end
+ 
++  def test_top_level_yield_in_layouts_and_partials_parses
++    with_project do |root|
++      path = "#{root}/layout.html.erb"
++      write path, "<body><%= yield %></body>\n<%= content_for?(:aside) ? yield(:aside) : Sidebar.default %>\n"
++      source = ArchSpec::Sources::Erb.new(path)
++
++      assert_empty source.parse_errors
++      assert_equal ["yield", "content_for?(:aside) ? yield(:aside) : Sidebar.default"],
++                   source.prism.statements.body.map(&:slice)
++    end
++  end
++
+   def test_extensions_and_index_paths
+     assert_equal %w[.erb], ArchSpec::Sources::Erb.extensions
+     refute ArchSpec::Sources::Erb.index_paths?
+-- 
+2.52.0
+

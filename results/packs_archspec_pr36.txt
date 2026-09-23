@@ -1,0 +1,10 @@
+C19 | dependencies.forbid | packs/billing/app/models/billing/reminder.rb:4 | Billing::Reminder references Sales::Order
+C12 | dependencies.privacy | packs/sales/app/controllers/sales/orders_controller.rb:4 | Sales::OrdersController references Billing::Invoice
+C02 | dependencies.privacy | packs/sales/app/models/sales/absolute_reference.rb:3 | Sales::AbsoluteReference references Billing::Invoice
+C21 | dependencies.privacy | packs/sales/app/models/sales/aliased.rb:3 | Sales::Aliased::INVOICE references Billing::Invoice
+C25 | dependencies.privacy | packs/sales/app/models/sales/anonymous_subclass.rb:2 | Sales::AnonymousSubclass inherits from Billing::Invoice
+C10 | dependencies.privacy | packs/sales/app/models/sales/checkout.rb:5 | Sales::Checkout references Billing::PaymentError
+C01 | dependencies.privacy | packs/sales/app/models/sales/direct_reference.rb:3 | Sales::DirectReference references Billing::Invoice
+C04 | dependencies.privacy | packs/sales/app/models/sales/quote.rb:3 | Sales::Quote includes Billing::Taxable
+C03 | dependencies.privacy | packs/sales/app/models/sales/refund.rb:2 | Sales::Refund inherits from Billing::Invoice
+analysis: {"unresolved_constants" => 6, "dynamic_features" => 1, "unknown_receivers" => 9, "rubydex_diagnostics" => {}}

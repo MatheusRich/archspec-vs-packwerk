@@ -1,0 +1,121 @@
+{
+  "files": 24,
+  "constants": 44,
+  "facts": 68,
+  "analysis": {
+    "unresolved_constants": 6,
+    "dynamic_features": 1,
+    "unknown_receivers": 9,
+    "rubydex_diagnostics": {}
+  },
+  "violations": [
+    {
+      "id": "b909f83fd8bfc048fb8ea2dc",
+      "rule": "dependencies.forbid",
+      "message": "billing must not depend on sales",
+      "path": "packs/billing/app/models/billing/reminder.rb",
+      "line": 4,
+      "column": 7,
+      "end_line": 4,
+      "end_column": 19,
+      "evidence": "Billing::Reminder references Sales::Order",
+      "confidence": "high"
+    },
+    {
+      "id": "006dd761f6845387d3f47cfd",
+      "rule": "dependencies.privacy",
+      "message": "Billing::Invoice is private to billing",
+      "path": "packs/sales/app/controllers/sales/orders_controller.rb",
+      "line": 4,
+      "column": 19,
+      "end_line": 4,
+      "end_column": 35,
+      "evidence": "Sales::OrdersController references Billing::Invoice",
+      "confidence": "high"
+    },
+    {
+      "id": "1c553b1856ae8787aee5e35a",
+      "rule": "dependencies.privacy",
+      "message": "Billing::Invoice is private to billing",
+      "path": "packs/sales/app/models/sales/absolute_reference.rb",
+      "line": 3,
+      "column": 25,
+      "end_line": 3,
+      "end_column": 43,
+      "evidence": "Sales::AbsoluteReference references Billing::Invoice",
+      "confidence": "high"
+    },
+    {
+      "id": "f4696759538dd81cab705e30",
+      "rule": "dependencies.privacy",
+      "message": "Billing::Invoice is private to billing",
+      "path": "packs/sales/app/models/sales/aliased.rb",
+      "line": 3,
+      "column": 15,
+      "end_line": 3,
+      "end_column": 31,
+      "evidence": "Sales::Aliased::INVOICE references Billing::Invoice",
+      "confidence": "high"
+    },
+    {
+      "id": "1ba24ce1d57feabe461f9271",
+      "rule": "dependencies.privacy",
+      "message": "Billing::Invoice is private to billing",
+      "path": "packs/sales/app/models/sales/anonymous_subclass.rb",
+      "line": 2,
+      "column": 33,
+      "end_line": 2,
+      "end_column": 49,
+      "evidence": "Sales::AnonymousSubclass inherits from Billing::Invoice",
+      "confidence": "high"
+    },
+    {
+      "id": "7f3e071e18e083481643af95",
+      "rule": "dependencies.privacy",
+      "message": "Billing::PaymentError is private to billing",
+      "path": "packs/sales/app/models/sales/checkout.rb",
+      "line": 5,
+      "column": 12,
+      "end_line": 5,
+      "end_column": 33,
+      "evidence": "Sales::Checkout references Billing::PaymentError",
+      "confidence": "high"
+    },
+    {
+      "id": "5d704b09e2ba0571716185d5",
+      "rule": "dependencies.privacy",
+      "message": "Billing::Invoice is private to billing",
+      "path": "packs/sales/app/models/sales/direct_reference.rb",
+      "line": 3,
+      "column": 25,
+      "end_line": 3,
+      "end_column": 41,
+      "evidence": "Sales::DirectReference references Billing::Invoice",
+      "confidence": "high"
+    },
+    {
+      "id": "75689c256c15339f18b6b6e7",
+      "rule": "dependencies.privacy",
+      "message": "Billing::Taxable is private to billing",
+      "path": "packs/sales/app/models/sales/quote.rb",
+      "line": 3,
+      "column": 13,
+      "end_line": 3,
+      "end_column": 29,
+      "evidence": "Sales::Quote includes Billing::Taxable",
+      "confidence": "high"
+    },
+    {
+      "id": "c4a3c3b50a9525c6f6d64307",
+      "rule": "dependencies.privacy",
+      "message": "Billing::Invoice is private to billing",
+      "path": "packs/sales/app/models/sales/refund.rb",
+      "line": 2,
+      "column": 18,
+      "end_line": 2,
+      "end_column": 34,
+      "evidence": "Sales::Refund inherits from Billing::Invoice",
+      "confidence": "high"
+    }
+  ]
+}

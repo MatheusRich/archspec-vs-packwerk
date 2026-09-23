@@ -1,0 +1,3 @@
+<% Billing::Invoice.where(voided: true).each do |invoice| %><%# CASE C11 ERB view %>
+  <%= invoice.id %>
+<% end %>

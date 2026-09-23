@@ -1,0 +1,17 @@
+C12 | dependencies.privacy | app/controllers/sales/orders_controller.rb:4 | Sales::OrdersController references Billing::Invoice
+C19 | dependencies.forbid | app/models/billing/reminder.rb:4 | Billing::Reminder references Sales::Order
+C02 | dependencies.privacy | app/models/sales/absolute_reference.rb:3 | Sales::AbsoluteReference references Billing::Invoice
+C21 | dependencies.privacy | app/models/sales/aliased.rb:3 | Sales::Aliased::INVOICE references Billing::Invoice
+C25 | dependencies.privacy | app/models/sales/anonymous_subclass.rb:2 | Sales::AnonymousSubclass inherits from Billing::Invoice
+C10 | dependencies.privacy | app/models/sales/checkout.rb:5 | Sales::Checkout references Billing::PaymentError
+C05 | dependencies.privacy | app/models/sales/customer.rb:3 | Sales::Customer references Billing::Invoice
+C01 | dependencies.privacy | app/models/sales/direct_reference.rb:3 | Sales::DirectReference references Billing::Invoice
+C08 | dependencies.privacy | app/models/sales/dynamic_lookup.rb:4 | Sales::DynamicLookup references Billing
+C22 | dependencies.privacy | app/models/sales/namespace_call.rb:3 | Sales::NamespaceCall references Billing
+C04 | dependencies.privacy | app/models/sales/quote.rb:3 | Sales::Quote includes Billing::Taxable
+C03 | dependencies.privacy | app/models/sales/refund.rb:2 | Sales::Refund inherits from Billing::Invoice
+C05 | dependencies.privacy | app/models/sales/subscription.rb:3 | Sales::Subscription references Billing::Invoice
+C05 | dependencies.privacy | app/models/sales/subscription.rb:4 | Sales::Subscription references Billing::Invoice
+C11 | dependencies.forbid | app/views/billing/invoices/show.html.erb:2 | app/views/billing/invoices/show.html.erb references Sales::Order
+C11 | dependencies.privacy | app/views/sales/orders/show.html.erb:1 | app/views/sales/orders/show.html.erb references Billing::Invoice
+analysis: {"unresolved_constants" => 6, "dynamic_features" => 1, "unknown_receivers" => 15, "rubydex_diagnostics" => {}}

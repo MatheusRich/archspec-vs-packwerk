@@ -1,0 +1,5 @@
+<ul>
+  <% Billing::Api.invoices_for(@order).each do |invoice| %><%# CASE C11c ERB public API (must NOT be flagged) %>
+    <li><%= link_to invoice.id, "#" %></li>
+  <% end %>
+</ul>

@@ -1,0 +1,10 @@
+app         files   master     pr37   packwerk packwerk+cache        pks
+b_5_1000     1025   1.326s   1.333s     0.730s        0.663s     0.094s
+b_8_2500     2524   3.554s   3.521s     0.842s        0.769s     0.114s
+b_8_5000     5028   7.330s   7.460s     1.071s        0.923s     0.217s
+b_15_5000    5030   8.558s   8.837s     1.069s        0.931s     0.225s
+b_40_5000    5060  17.840s  19.054s     1.113s        0.984s     0.223s
+
+One-file check (packs/pack5/app/models/pack5/thing25.rb):
+b_8_5000   master=7.798s pr37=7.693s packwerk=0.593s packwerk+cache=0.585s pks=0.098s
+b_40_5000  master=19.260s pr37=19.285s packwerk=0.596s packwerk+cache=0.594s pks=0.103s
