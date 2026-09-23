@@ -6,6 +6,8 @@ root=$(cd "$(dirname "$0")/.." && pwd)
 out=$root/results
 v110=$(dirname "$(gem contents archspec -v 1.1.0 | grep '/lib/archspec.rb$')")
 archspec() { local lib=$1; shift; ruby -I"$lib" "$lib/../exe/archspec" "$@"; }
+# The progress dots and the time change on every run, so they are removed.
+packwerk() { bundle exec packwerk check 2>&1 | sed -E $'s/\x1b\\[[0-9;]*m//g' | grep -Ev '^[.E]+$|^📦 Finished in'; }
 
 cd "$root/modules_app"
 # 1.1.0 has no facts file, so it gets the same rules without the facts line.
@@ -18,11 +20,11 @@ for build in master pr36; do
   ARCHSPEC_PATH=../vendor/archspec/$build bundle exec ruby -I"$lib" "$lib/../exe/archspec" reflect > /dev/null
   archspec "$lib" check --format json > "$out/modules_archspec_$build.json"
 done
-bundle exec packwerk check > "$out/modules_packwerk.txt" 2>&1
+packwerk > "$out/modules_packwerk.txt"
 
 cd "$root/packs_app"
 archspec "$root/vendor/archspec/pr36/lib" check --format json > "$out/packs_archspec_pr36.json"
-bundle exec packwerk check > "$out/packs_packwerk.txt" 2>&1
+packwerk > "$out/packs_packwerk.txt"
 
 cd "$root"
 for app in modules packs; do

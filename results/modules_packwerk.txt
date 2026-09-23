@@ -1,15 +1,13 @@
 📦 Packwerk is inspecting 45 files
-.........[31mE[m......[31mE[m.[31mE[m..[31mE[m.[31mE[m.[31mE[m[31mE[m....[31mE[m.....[31mE[m[31mE[m[31mE[m[31mE[m..[31mE[m.
-📦 Finished in 0.33 seconds
 
-[36mapp/controllers/sales/orders_controller.rb[m:4:18
+app/controllers/sales/orders_controller.rb:4:18
 Privacy violation: '::Billing::Invoice' is private to 'app/models/billing' but referenced from 'app/controllers/sales'.
 Is there a public entrypoint in 'app/models/billing/app/public/' that you can use instead?
 
 Inference details: this is a reference to ::Billing::Invoice which seems to be defined in app/models/billing/invoice.rb.
 To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
 
-[36mapp/models/billing/reminder.rb[m:4:6
+app/models/billing/reminder.rb:4:6
 Dependency violation: ::Sales::Order belongs to 'app/models/sales', but 'app/models/billing' does not specify a dependency on 'app/models/sales'.
 Are the constant and its references in the right packages?
 
@@ -17,77 +15,77 @@ Inference details: this is a reference to ::Sales::Order which seems to be defin
 To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
 
 
-[36mapp/models/sales/absolute_reference.rb[m:3:24
+app/models/sales/absolute_reference.rb:3:24
 Privacy violation: '::Billing::Invoice' is private to 'app/models/billing' but referenced from 'app/models/sales'.
 Is there a public entrypoint in 'app/models/billing/app/public/' that you can use instead?
 
 Inference details: this is a reference to ::Billing::Invoice which seems to be defined in app/models/billing/invoice.rb.
 To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
 
-[36mapp/models/sales/aliased.rb[m:3:14
+app/models/sales/aliased.rb:3:14
 Privacy violation: '::Billing::Invoice' is private to 'app/models/billing' but referenced from 'app/models/sales'.
 Is there a public entrypoint in 'app/models/billing/app/public/' that you can use instead?
 
 Inference details: this is a reference to ::Billing::Invoice which seems to be defined in app/models/billing/invoice.rb.
 To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
 
-[36mapp/models/sales/anonymous_subclass.rb[m:2:32
+app/models/sales/anonymous_subclass.rb:2:32
 Privacy violation: '::Billing::Invoice' is private to 'app/models/billing' but referenced from 'app/models/sales'.
 Is there a public entrypoint in 'app/models/billing/app/public/' that you can use instead?
 
 Inference details: this is a reference to ::Billing::Invoice which seems to be defined in app/models/billing/invoice.rb.
 To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
 
-[36mapp/models/sales/checkout.rb[m:5:11
+app/models/sales/checkout.rb:5:11
 Privacy violation: '::Billing::PaymentError' is private to 'app/models/billing' but referenced from 'app/models/sales'.
 Is there a public entrypoint in 'app/models/billing/app/public/' that you can use instead?
 
 Inference details: this is a reference to ::Billing::PaymentError which seems to be defined in app/models/billing/payment_error.rb.
 To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
 
-[36mapp/models/sales/customer.rb[m:3:4
+app/models/sales/customer.rb:3:4
 Privacy violation: '::Billing::Invoice' is private to 'app/models/billing' but referenced from 'app/models/sales'.
 Is there a public entrypoint in 'app/models/billing/app/public/' that you can use instead?
 
 Inference details: this is a reference to ::Billing::Invoice which seems to be defined in app/models/billing/invoice.rb.
 To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
 
-[36mapp/models/sales/direct_reference.rb[m:3:24
+app/models/sales/direct_reference.rb:3:24
 Privacy violation: '::Billing::Invoice' is private to 'app/models/billing' but referenced from 'app/models/sales'.
 Is there a public entrypoint in 'app/models/billing/app/public/' that you can use instead?
 
 Inference details: this is a reference to ::Billing::Invoice which seems to be defined in app/models/billing/invoice.rb.
 To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
 
-[36mapp/models/sales/quote.rb[m:3:12
+app/models/sales/quote.rb:3:12
 Privacy violation: '::Billing::Taxable' is private to 'app/models/billing' but referenced from 'app/models/sales'.
 Is there a public entrypoint in 'app/models/billing/app/public/' that you can use instead?
 
 Inference details: this is a reference to ::Billing::Taxable which seems to be defined in app/models/billing/taxable.rb.
 To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
 
-[36mapp/models/sales/refund.rb[m:2:17
+app/models/sales/refund.rb:2:17
 Privacy violation: '::Billing::Invoice' is private to 'app/models/billing' but referenced from 'app/models/sales'.
 Is there a public entrypoint in 'app/models/billing/app/public/' that you can use instead?
 
 Inference details: this is a reference to ::Billing::Invoice which seems to be defined in app/models/billing/invoice.rb.
 To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
 
-[36mapp/models/sales/subscription.rb[m:3:4
+app/models/sales/subscription.rb:3:4
 Privacy violation: '::Billing::Invoice' is private to 'app/models/billing' but referenced from 'app/models/sales'.
 Is there a public entrypoint in 'app/models/billing/app/public/' that you can use instead?
 
 Inference details: this is a reference to ::Billing::Invoice which seems to be defined in app/models/billing/invoice.rb.
 To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
 
-[36mapp/models/sales/subscription.rb[m:4:4
+app/models/sales/subscription.rb:4:4
 Privacy violation: '::Billing::Invoice' is private to 'app/models/billing' but referenced from 'app/models/sales'.
 Is there a public entrypoint in 'app/models/billing/app/public/' that you can use instead?
 
 Inference details: this is a reference to ::Billing::Invoice which seems to be defined in app/models/billing/invoice.rb.
 To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
 
-[36mapp/views/billing/invoices/show.html.erb[m:1:1
+app/views/billing/invoices/show.html.erb:1:1
 Dependency violation: ::Sales::Order belongs to 'app/models/sales', but '.' does not specify a dependency on 'app/models/sales'.
 Are the constant and its references in the right packages?
 
@@ -95,7 +93,7 @@ Inference details: this is a reference to ::Sales::Order which seems to be defin
 To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
 
 
-[36mapp/views/sales/orders/show.html.erb[m:1:1
+app/views/sales/orders/show.html.erb:1:1
 Privacy violation: '::Billing::Invoice' is private to 'app/models/billing' but referenced from 'app/views/sales'.
 Is there a public entrypoint in 'app/models/billing/app/public/' that you can use instead?
 
