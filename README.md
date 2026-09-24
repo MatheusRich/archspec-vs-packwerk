@@ -11,32 +11,39 @@ All results are from 2026-09-23, on one machine.
 
 ## Summary
 
-The two approaches catch the same violations. ArchSpec is better for the app, because the code stays in a plain Rails layout. Packwerk is better for the check itself: it is faster, it needs one command, and it is mature.
+With an unreleased ArchSpec build, the two approaches catch the same violations. ArchSpec is better for the app, because the code stays in a plain Rails layout. Packwerk is better for the check itself: it is faster, it needs one command, and it is mature.
 
 ### Detection is equal
 
-With the correct configuration, each tool catches 18 of the 20 violations in the test set. Neither tool follows dynamic lookups such as `constantize`. Two ArchSpec features are not released yet. Association support is on `master` only. ERB support is in a draft PR that needs one more fix.
+Each tool catches 18 of the 20 violations in the test set, but ArchSpec needs two conditions for this:
+
+- **An unreleased build.** Association support is on `master` only. ERB support is in a draft PR (PR #36) that needs one more fix. The released 1.1.0 catches 11 of the 18 violations in application code.
+- **Extra configuration.** ArchSpec reads tests and rake tasks only with extra `source` globs.
+
+Neither tool follows dynamic lookups such as `constantize`.
 
 ### ArchSpec is better for the app
 
 - **Plain Rails.** A domain is a folder and a namespace in the standard Rails folders. Zeitwerk loads it with the default settings. Generators write to the correct folders, and `bin/rails test` finds the tests. A generator asks for confirmation only before it replaces an existing namespace file.
 - **Configuration.** One `Archspec.rb` file holds all rules. One line declares a domain by namespace, in all Rails folders. The public API can be a namespace. Packwerk needs a `package.yml` in each package directory.
 - **More rules.** The ArchSpec presets for Rails (for example, "models must not depend on controllers") work together with the rules for each domain. ArchSpec also checks class-level rules that Packwerk does not have: forbidden method calls, method protocols and naming.
-- **Exact locations.** ArchSpec reports the line and column, also in ERB. Packwerk reported one ERB violation at `1:1`.
+- **Exact locations.** ArchSpec reports the correct line and column, also in ERB. In ERB files, Packwerk reports the wrong line and always column 1. For example, it reported references on lines 5 and 6 at `1:1` and `2:1`.
 
-On the packs layout, most Rails tools need extra configuration: packs-rails, a test glob, and a move step after each generator. Also, the ArchSpec presets for Rails do not see the code in packs.
+On the packs layout, most Rails tools need extra configuration: packs-rails, a test glob, and a move step after each generator. The ArchSpec presets for Rails also need globs for the packs.
 
 ### Packwerk is better for the check
 
-- **Speed.** Packwerk is faster at every measured size. A full check on 5,000 files takes about 1s with Packwerk, 0.2s with pks, and 7s to 18s with ArchSpec. A check of one file takes 0.6s with Packwerk, 0.1s with pks, and 8s to 19s with ArchSpec, because ArchSpec always analyzes the whole project. On 1,000 files, ArchSpec takes 1.3s. So the difference matters most for large apps and for pre-commit hooks.
-- **One step.** For association checks, ArchSpec needs `archspec reflect` (an app boot) before `archspec check`. Any change to the source or the configuration makes the facts file stale. Packwerk reads associations from the source in one command.
+- **Speed.** Packwerk is faster at every measured size. A full check on 5,000 files takes about 1s with Packwerk, 0.2s with pks, and 7s to 19s with ArchSpec. A check of one file takes 0.6s with Packwerk, 0.1s with pks, and 8s to 19s with ArchSpec, because ArchSpec always analyzes the whole project. On 1,000 files, ArchSpec takes 1.3s. So the difference matters most for large apps and for pre-commit hooks.
+- **One step.** For association checks, ArchSpec needs `archspec reflect` (an app boot) before `archspec check`. A change to an analyzed file or to the app configuration makes the facts file stale. Packwerk reads associations from the source in one command.
 - **Defaults.** Packwerk reads tests, rake tasks and ERB files by default. ArchSpec needs extra `source` and `in:` globs for them.
 - **Obsolete todo entries.** Packwerk fails when the todo file lists a violation that no longer exists. ArchSpec needs an open PR for this.
 - **Maturity.** Packwerk and its tools are several years old. ArchSpec is at version 1.1.0, and its first pull request is from 2026-06-24. One author wrote 89 of its 91 commits.
 
 ### Recommendation
 
-For a small or mid-size app, use namespaced modules with ArchSpec. The layout stays plain Rails, and a full check takes a few seconds: 1.3s on 1,000 files and 3.5s on 2,500 files. Wait for a release that includes association reflection and ERB support. For a large app that needs fast checks on each commit, or for an app that already uses packs, use Packwerk or pks.
+For a small or mid-size app, use namespaced modules with ArchSpec. The layout stays plain Rails. In the benchmark, a full check takes 1.3s on 1,000 files and 3.5s on 2,500 files. These times are for `master` with file globs, without ERB and without `reflect`, so the recommended configuration is slower. `reflect` took 0.65s on the small fixture app, and there is no measurement on a large app. Wait for a release that includes association reflection and ERB support.
+
+For a large app that needs fast checks on each commit, or for an app that already uses packs, use Packwerk or pks.
 
 ## Setup
 
@@ -54,7 +61,7 @@ There are two versions of one small Rails app:
 - `modules_app/` uses the modules layout. Its `Archspec.rb` declares `billing` and `sales` by namespace and adds the ERB views with `in:`. `sales` can only use `billing`. `billing` cannot use `sales`. Only the `Billing::Api` namespace is public.
 - `packs_app/` uses the Packwerk layout, with the same code in `packs/billing/` and `packs/sales/`. `packs/sales` depends on `packs/billing`. `packs/billing` enforces privacy, and its public folder holds `Billing::Api`.
 
-Each fixture file marks its case with a `# CASE Cxx` comment. The test set is hand-written, so it does not prove that either tool is complete.
+Each fixture file marks its case with a `# CASE` comment. The test set is hand-written, so it does not prove that either tool is complete. The case numbers have gaps, because some numbers were never used.
 
 ## Detection
 
@@ -76,13 +83,13 @@ The ArchSpec columns use the modules layout. The Packwerk column uses the packs 
 | C18 | `invoices.last.void!` (no constant in the code) | ❌ | ❌ | ❌ | ❌ |
 | C19 | Billing uses `Sales::Order` (the wrong direction) | ✅ | ✅ | ✅ | ✅ |
 | C21 | `INVOICE = Billing::Invoice` | ✅ | ✅ | ✅ | ✅ |
-| C22 | `Billing.charge(order)` on the namespace module | ✅ (4) | ✅ (4) | ✅ (4) | ✅ |
+| C22 | `Billing.charge(order)` on the namespace module | ✅ (4) | ✅ (4) | ✅ (4) | ✅ (4) |
 | C25 | `Class.new(Billing::Invoice)` | ✅ | ✅ | ✅ | ✅ |
-| N1 | A Sales test uses `Billing::Invoice` | not run | not run | ❌ by default, ✅ with extra globs (5) | ✅ |
-| N2 | A Sales rake task uses `Billing::Invoice` | not run | not run | ❌ by default, ✅ with extra globs (5) | ✅ |
+| N1 | A Sales test uses `Billing::Invoice` | ❌ (5) | ❌ (5) | ❌ by default, ✅ with extra globs (5) | ✅ |
+| N2 | A Sales rake task uses `Billing::Invoice` | ❌ (5) | ❌ (5) | ❌ by default, ✅ with extra globs (5) | ✅ |
 | | **Violations caught (C cases: 18, N cases: 2)** | **11 of 18** | **14 of 18** | **16 of 18; 18 of 20 with extra globs** | **18 of 20** |
 
-The test set also has controls, which a tool must not flag. No tool flagged a control. Some controls apply only to some columns:
+The test set also has controls, which a tool must not flag. With the configurations above, no tool flagged a control. Some controls apply only to some columns:
 
 | Control | What the code does | Result |
 |---|---|---|
@@ -95,15 +102,22 @@ Notes:
 
 1. `archspec reflect` boots the app and gets the association targets from Active Record. It writes a facts file that `archspec check` reads. See [The facts file](#the-facts-file).
 2. Both tools see only the reference to the `Billing` module, not the lookup of `Invoice`. The totals count the case as caught, but neither tool detects the reference to the private constant.
-3. Packwerk reports the ERB violation at `1:1`, but the reference is on line 2. ArchSpec reports the correct line and column.
-4. ArchSpec flags C08 and C22 because the `Billing` module itself is private in this configuration. On the packs layout with a file glob for `public_api`, ArchSpec does not flag them. There, `app/public/billing/api.rb` reopens `module Billing`, so the `Billing` module is public.
-5. By default, ArchSpec reads only `app/**/*.rb`, `lib/**/*.rb`, `packs/*/app/**/*.rb` and `engines/*/app/**/*.rb`. Packwerk reads `**/*.{rb,rake,erb}`, except `bin`, `node_modules`, `script`, `tmp` and `vendor`. To catch N1 and N2, `Archspec.rb` needs `source "app/**/*.rb", "lib/**/*.rb", "test/**/*.rb", "lib/tasks/**/*.rake"`. The rake file also needs an `in:` glob on the component, because a rake file defines no constant that the namespace selector can match.
+3. Packwerk reports this ERB violation at `1:1`, but the reference is on line 2. In ERB files, Packwerk reports the wrong line and always column 1. ArchSpec reports the correct line and column.
+4. Both tools flag C08 and C22 only because the `Billing` module itself is private in this configuration. On the packs layout with a file glob for `public_api`, ArchSpec does not flag them. There, `app/public/billing/api.rb` reopens `module Billing`, so the `Billing` module is public. On the modules layout, Packwerk does not flag them, because `app/models/billing.rb` is in the root package.
+5. By default, ArchSpec reads only `app/**/*.rb`, `lib/**/*.rb`, `packs/*/app/**/*.rb` and `engines/*/app/**/*.rb`. Packwerk reads `**/*.{rb,rake,erb}`, except `bin`, `node_modules`, `script`, `tmp` and `vendor`. To catch N1 and N2, `Archspec.rb` needs `source "app/**/*.rb", "lib/**/*.rb", "test/**/*.rb", "lib/tasks/**/*.rake"`. A `source` line replaces the defaults, so it must list them again. The privacy rule then flags the rake file with no other change. A rake file defines no constant, so it is in no component. A rule on a component, such as `billing.cannot_use`, applies to a rake file only with an `in:` glob on the component (inferred from the rule code, not tested).
 
 Neither tool follows dynamic lookups (C07, C08) or calls on objects that an association returns (C18).
 
+### Each tool on the other layout
+
+The table shows each tool on its own layout. On the other layout, both tools catch less:
+
+- **Packwerk on the modules layout** catches 16 of 20. It misses C08 and C22, because `app/models/billing.rb` is in the root package (see note 4). This layout needs a `package.yml` in each namespaced folder.
+- **ArchSpec (PR #36 build) on the packs layout** catches 10 of 20 with the `Archspec.rb` in `packs_app/`. That file has no facts file (C05), no ERB globs (C11) and a file glob for the public API (C08, C22, see note 4). It catches N1, because the `in:` glob of a component also adds its files to the analysis.
+
 ### The facts file
 
-`archspec reflect` writes a facts file with a hash of each analyzed file, the files in `config/`, the `Gemfile`, `Gemfile.lock` and the Ruby version file. When one of these files changes, `archspec check` fails with "stale facts file" until `reflect` runs again. A new comment in `app/models/sales/order.rb` makes the facts file stale.
+`archspec reflect` writes a facts file with a hash of each analyzed file, the `.rb` and `.yml` files in `config/`, the `Gemfile`, `Gemfile.lock`, the gemspec and the Ruby version file. When one of these files changes, `archspec check` fails with "stale facts file" until `reflect` runs again. A new comment in `app/models/sales/order.rb` makes the facts file stale. A new rule in `Archspec.rb` does not.
 
 Packwerk does not need this step. It reads `class_name:` from the source and boots the app inside `packwerk check`. With ArchSpec, a check after each change needs `reflect` (an app boot) and then `check` (a whole-project analysis). `reflect` takes about 0.65s on `modules_app`. The ArchSpec times in this report do not include it.
 
@@ -121,7 +135,7 @@ The generated benchmark apps have no templates, so there is no measurement of th
 
 ### Full check on generated apps
 
-The generated apps use the packs layout. In each pack, the classes have 20 methods. Each pack depends on the previous pack and calls its public API. One file in 25 also has a private reference to the previous pack. The `Archspec.rb` declares the same dependencies as each `package.yml` (with `can_only_use`) and the same privacy (with `public_api`), so all tools check the same rules. All tools found all the violations.
+The generated apps use the packs layout. In each pack, the classes have 20 methods. Each pack depends on the previous pack and calls its public API. One file in 25 also has a private reference to the previous pack. The `Archspec.rb` declares the same dependencies as each `package.yml` (with `can_only_use`) and the same privacy (with `public_api`), so all tools check the same rules. All tools found all the generated violations. The code that the apps copy from `packs_app/` gives a few more Packwerk offenses, because the benchmark configuration has no facts file and no ERB globs.
 
 The table shows the median of three runs. The raw times are in `results/bench.raw`.
 
@@ -139,6 +153,7 @@ Limits of this benchmark:
 - The ArchSpec components use file globs, not the `namespace:` selector of the modules layout. There is no measurement of the cost of namespace selection.
 - Absolute times vary by up to 50% from run to run. For example, Packwerk took 1.0s in one run and 1.6s in a different run on the 5,000-file app. Compare the tools only inside one table.
 - Packwerk runs through `bundle exec`, which boots the app. ArchSpec runs directly with `ruby -I`.
+- Packwerk uses all 14 CPUs. On the 1,025-file app, it used 0.7s of wall time and 3.2s of CPU time. With `parallel: false`, it took 1.15s, and ArchSpec took 1.29s. On a machine with fewer CPUs, such as a CI runner, the difference is smaller.
 
 ### Check of one file
 
@@ -156,8 +171,8 @@ A pre-commit hook usually checks only the changed files. Median of three runs:
 - **Parallel work.** By default, Packwerk starts one worker per CPU and checks each file independently. ArchSpec runs in one process.
 - **Constant lookup by file name.** Packwerk finds the file of a constant from its name, with the Zeitwerk naming rules. It does not parse a file to find what the file defines. ArchSpec uses Rubydex to build a full index of definitions, ancestors and methods. This index also works for code that does not follow the Zeitwerk naming rules.
 - **Privacy rules grow with the square of the pack count.** Each `public_api` rule checks every dependency edge, and each check loops over all components. So the cost grows with edges × packs². The source shows this (`component_names_for_constant` and `component_names_for_path` in `model.rb`). On the 42-pack app, 10 `public_api` rules added 1.7s and 42 rules added 7.8s.
-- **Method analysis.** ArchSpec builds method tables and call sites. Only the `cannot_call`, protocol and naming rules use them. On a generated 5,000-file app, this work takes about 1.9s of the 4.5s analysis. A build that skips this work (and the call-site edges) cut a check from 7.0s to 4.0s, with the same violations. On Discourse, this work is 8% of the run on `master` and 14% with PR #37. The build that skips it also changes the "analysis gaps" output, so it is not only a speed change.
-- **pks is compiled.** It runs the same checks 4 to 5 times faster than Packwerk.
+- **Method analysis.** ArchSpec builds method tables and call sites. Most rules do not use them: the main users are the `cannot_call`, protocol and naming rules, and the concern analysis. On a generated 5,000-file app, this work takes about 1.9s of the 4.5s analysis. A build that skips this work (and the call-site edges) cut a check from 7.0s to 4.0s, with the same violations. On Discourse, this work is 8% of the run on `master` and 14% with PR #37. The build that skips it also changes the "analysis gaps" output, so it is not only a speed change.
+- **pks is compiled.** It runs the same checks 5 to 8 times faster than Packwerk.
 
 ### Concern analysis on real apps (PR #37)
 
@@ -196,11 +211,18 @@ The modules layout needs no change to Rails. A domain is a folder and a namespac
 | `bin/rails g model billing/charge` | Writes `app/models/billing/charge.rb`, its test and its fixture in the correct folders. It reports a conflict with the existing `app/models/billing.rb` and offers to replace it with a `table_name_prefix` module. Answer "no", or pass `--skip`, to keep the file | Writes the same files in the root `app/` and `test/`, not in `packs/billing/`. It also writes a second `app/models/billing.rb` | The same as without packs-rails: the files go to the root `app/` and `spec/` |
 | `bin/rails test` (Minitest) | Runs `test/models/billing/discovery_test.rb` (1 run) | Does not find `packs/billing/test/models/billing/discovery_test.rb` (0 runs). `DEFAULT_TEST='{test,packs/*/test}/**/*_test.rb' bin/rails test` finds it (1 run) | The same as without packs-rails. packs-rails has no Minitest integration |
 | `rspec` | Not tested | Not tested | Plain `rspec` finds no pack specs. `rspec --require packs/rails/rspec` finds `packs/billing/spec/models/billing/discovery_spec.rb` (1 example) |
-| ArchSpec `architecture :rails` preset | A model in `app/models/sales/` that uses a controller fails with "models must not depend on controllers" | The same model in `packs/sales/app/models/sales/` is in no component, so the check passes with no warning | The same as without packs-rails (0 violations). ArchSpec reads the files statically, so the Rails paths do not change its components |
+| ArchSpec `architecture :rails` preset | A model in `app/models/sales/` that uses a controller fails with "models must not depend on controllers" | The same model in `packs/sales/app/models/sales/` is in no component, so the check passes with no warning. With pack globs in `components:`, the preset flags it | The same as without packs-rails. ArchSpec reads the files statically, so the Rails paths do not change its components |
 
-So the packs layout can get most of this with configuration: packs-rails for autoloading, `DEFAULT_TEST` or the RSpec integration for tests, and a move step after each generator. pks has a `move` command for that step, which was not tested. The ArchSpec presets for Rails are the exception. They use `app/**` paths, so on the packs layout you must declare each preset again with pack paths. On the modules layout, the presets work with no change, together with the rules for each domain.
+So the packs layout can get most of this with configuration: packs-rails for autoloading, `DEFAULT_TEST` or the RSpec integration for tests, and a move step after each generator. pks has a `move` command for that step, which was not tested. The ArchSpec presets for Rails also need configuration. By default they use `app/**` paths. On the packs layout, pass pack globs, for example `architecture :rails, components: { models: "{app,packs/*/app}/models/**/*.rb", controllers: "{app,packs/*/app}/controllers/**/*.rb" }`. On the modules layout, the presets work with no change, together with the rules for each domain.
 
-Other tools that use the standard Rails paths were not tested.
+Other tools that use the standard Rails paths were not tested. The checks in this section were done by hand, and there is no script for them.
+
+### Not compared
+
+- Editor support.
+- The tools around packs: `code_ownership`, `danger-packwerk` (violations as PR comments), `rubocop-packs` and `visualize_packs`.
+- Gradual adoption on a large existing app, and false positives on real code. The test set has only five controls.
+- The maintenance status of Packwerk.
 
 ## Open items
 
@@ -211,7 +233,7 @@ Other tools that use the standard Rails paths were not tested.
 
 ## Reproduce
 
-The scripts need Ruby 3.4.6 and Bundler. The benchmark also needs the `pks` binary.
+The scripts need Ruby 3.4.6, Bundler and network access to GitHub. The benchmark also needs the `pks` binary.
 
 ```sh
 scripts/setup.sh                  # check out the ArchSpec builds and install the gems
@@ -219,7 +241,7 @@ scripts/detect.sh                 # run every tool on the fixture apps
 PKS=path/to/pks scripts/bench.sh  # run the benchmark (this takes about 8 minutes)
 ```
 
-`scripts/setup.sh` clones ArchSpec into `vendor/archspec/` and checks out three builds at fixed commits:
+`scripts/setup.sh` installs the archspec 1.1.0 gem, clones ArchSpec into `vendor/archspec/` and checks out three builds at fixed commits:
 
 | Folder | Build |
 |---|---|
@@ -233,10 +255,8 @@ The Gemfiles of the fixture apps use the `pr36` build. To use a different build,
 |---|---|
 | `modules_app/` | The modules layout, with `Archspec.rb` and the fixtures. It also has `package.yml` files, to run Packwerk on this layout. |
 | `packs_app/` | The Packwerk layout, with `packwerk.yml`, the `package.yml` files and an `Archspec.rb` for the same layout. |
-| `results/` | The output of `scripts/detect.sh` and `scripts/bench.sh`. For each ArchSpec run, the `.txt` file maps the violations to the `# CASE` comments. |
+| `results/` | The output of `scripts/detect.sh` and `scripts/bench.sh`. For each ArchSpec run, the `.txt` file maps the violations to the `# CASE` comments. `_globs` is the run with extra globs (N1, N2), and `_constants` is the run with `public_api constants:` (N3). |
 | `patches/` | The fix for PR #36. It parses the Ruby code from ERB as a partial script. |
-| `scripts/gen_bench.rb` | Generates a benchmark app: `ruby scripts/gen_bench.rb DIR PACKS FILES`. It copies `packs_app/` and writes an `Archspec.rb` with the same rules as the `package.yml` files. `scripts/bench.sh` generates its apps in `bench/`. |
+| `scripts/gen_bench.rb` | Generates a benchmark app: `ruby scripts/gen_bench.rb DIR PACKS FILES`. It copies `packs_app/` without the N1 to N3 files and writes an `Archspec.rb` with the same rules as the `package.yml` files. `scripts/bench.sh` generates its apps in `bench/`. |
 | `scripts/median_bench.rb`, `scripts/graph_digest.rb` | Time the analysis and hash the graph on the torture apps. To get the torture apps, run `bundle exec rake torture` in `vendor/archspec/master`. |
-| `scripts/report_archspec.rb` | Maps ArchSpec JSON output to the `# CASE` comments. It reads `C05b` as `C05`, so use the line numbers for the cases with a letter. |
-
-The fixture folders do not include the N1 to N3 cases.
+| `scripts/report_archspec.rb` | Maps ArchSpec JSON output to the `# CASE` comments. |
