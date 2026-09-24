@@ -70,6 +70,18 @@
       "confidence": "high"
     },
     {
+      "id": "5f33cc927be94eb0798b5a9f",
+      "rule": "dependencies.privacy",
+      "message": "Billing::Api::Result is private to billing",
+      "path": "app/models/sales/api_result.rb",
+      "line": 3,
+      "column": 17,
+      "end_line": 3,
+      "end_column": 37,
+      "evidence": "Sales::ApiResult references Billing::Api::Result",
+      "confidence": "high"
+    },
+    {
       "id": "43f5e9727c55aa21efe5c607",
       "rule": "dependencies.privacy",
       "message": "Billing::PaymentError is private to billing",

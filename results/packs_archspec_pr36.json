@@ -1,11 +1,11 @@
 {
-  "files": 24,
-  "constants": 44,
-  "facts": 68,
+  "files": 27,
+  "constants": 51,
+  "facts": 78,
   "analysis": {
-    "unresolved_constants": 6,
+    "unresolved_constants": 7,
     "dynamic_features": 1,
-    "unknown_receivers": 9,
+    "unknown_receivers": 10,
     "rubydex_diagnostics": {}
   },
   "violations": [
@@ -115,6 +115,18 @@
       "end_line": 2,
       "end_column": 34,
       "evidence": "Sales::Refund inherits from Billing::Invoice",
+      "confidence": "high"
+    },
+    {
+      "id": "670874cec4eca245e6b12ed5",
+      "rule": "dependencies.privacy",
+      "message": "Billing::Invoice is private to billing",
+      "path": "packs/sales/test/models/sales/invoice_usage_test.rb",
+      "line": 6,
+      "column": 23,
+      "end_line": 6,
+      "end_column": 39,
+      "evidence": "Sales::InvoiceUsageTest references Billing::Invoice",
       "confidence": "high"
     }
   ]

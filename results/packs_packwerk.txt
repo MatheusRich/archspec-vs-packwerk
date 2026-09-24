@@ -1,4 +1,4 @@
-📦 Packwerk is inspecting 45 files
+📦 Packwerk is inspecting 49 files
 
 packs/billing/app/models/billing/reminder.rb:4:6
 Dependency violation: ::Sales::Order belongs to 'packs/sales', but 'packs/billing' does not specify a dependency on 'packs/sales'.
@@ -114,6 +114,20 @@ Is there a public entrypoint in 'packs/billing/app/public/' that you can use ins
 Inference details: this is a reference to ::Billing::Invoice which seems to be defined in packs/billing/app/models/billing/invoice.rb.
 To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
 
-16 offenses detected
+packs/sales/lib/tasks/sales.rake:3:9
+Privacy violation: '::Billing::Invoice' is private to 'packs/billing' but referenced from 'packs/sales'.
+Is there a public entrypoint in 'packs/billing/app/public/' that you can use instead?
+
+Inference details: this is a reference to ::Billing::Invoice which seems to be defined in packs/billing/app/models/billing/invoice.rb.
+To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
+
+packs/sales/test/models/sales/invoice_usage_test.rb:6:22
+Privacy violation: '::Billing::Invoice' is private to 'packs/billing' but referenced from 'packs/sales'.
+Is there a public entrypoint in 'packs/billing/app/public/' that you can use instead?
+
+Inference details: this is a reference to ::Billing::Invoice which seems to be defined in packs/billing/app/models/billing/invoice.rb.
+To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
+
+18 offenses detected
 
 No stale violations detected

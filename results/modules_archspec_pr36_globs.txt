@@ -12,4 +12,8 @@ C04 | dependencies.privacy | app/models/sales/quote.rb:3 | Sales::Quote includes
 C03 | dependencies.privacy | app/models/sales/refund.rb:2 | Sales::Refund inherits from Billing::Invoice
 C05b | dependencies.privacy | app/models/sales/subscription.rb:3 | Sales::Subscription references Billing::Invoice
 C05c | dependencies.privacy | app/models/sales/subscription.rb:4 | Sales::Subscription references Billing::Invoice
-analysis: {"unresolved_constants" => 6, "dynamic_features" => 1, "unknown_receivers" => 9, "rubydex_diagnostics" => {}}
+C11b | dependencies.forbid | app/views/billing/invoices/show.html.erb:2 | app/views/billing/invoices/show.html.erb references Sales::Order
+C11 | dependencies.privacy | app/views/sales/orders/show.html.erb:1 | app/views/sales/orders/show.html.erb references Billing::Invoice
+N2 | dependencies.privacy | lib/tasks/sales.rake:3 | lib/tasks/sales.rake references Billing::Invoice
+N1 | dependencies.privacy | test/models/sales/invoice_usage_test.rb:6 | Sales::InvoiceUsageTest references Billing::Invoice
+analysis: {"unresolved_constants" => 7, "dynamic_features" => 1, "unknown_receivers" => 17, "rubydex_diagnostics" => {}}

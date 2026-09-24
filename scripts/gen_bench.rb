@@ -7,7 +7,8 @@ FileUtils.rm_rf(dir); FileUtils.mkdir_p(File.dirname(dir)); FileUtils.cp_r(File.
 Dir.chdir(dir)
 # The app is one folder deeper than packs_app/, so its path to ArchSpec needs one more "../".
 %w[Gemfile Gemfile.lock].each { File.write(_1, File.read(_1).gsub("../vendor/archspec/", "../../vendor/archspec/")) }
-FileUtils.rm_f(%w[archspec_todo.yml]); Dir["**/package_todo.yml"].each { File.delete(_1) }
+# The N1 to N3 fixtures are newer than the benchmark, so they are removed to keep the measured apps.
+FileUtils.rm_rf(%w[archspec_todo.yml packs/sales/test packs/sales/lib packs/billing/app/public/billing/api packs/sales/app/models/sales/api_result.rb]); Dir["**/package_todo.yml"].each { File.delete(_1) }
 packs.times do |i|
   mod = "Pack#{i}"; base = "packs/pack#{i}"
   FileUtils.mkdir_p(["#{base}/app/models/pack#{i}", "#{base}/app/public/pack#{i}"])

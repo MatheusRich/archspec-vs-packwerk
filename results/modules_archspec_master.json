@@ -1,7 +1,7 @@
 {
-  "files": 24,
-  "constants": 44,
-  "facts": 72,
+  "files": 26,
+  "constants": 49,
+  "facts": 74,
   "analysis": {
     "unresolved_constants": 6,
     "dynamic_features": 1,

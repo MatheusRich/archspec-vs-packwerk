@@ -1,11 +1,11 @@
 {
-  "files": 29,
-  "constants": 49,
-  "facts": 87,
+  "files": 32,
+  "constants": 53,
+  "facts": 108,
   "analysis": {
-    "unresolved_constants": 6,
+    "unresolved_constants": 7,
     "dynamic_features": 1,
-    "unknown_receivers": 15,
+    "unknown_receivers": 17,
     "rubydex_diagnostics": {}
   },
   "violations": [
@@ -199,6 +199,30 @@
       "end_line": 1,
       "end_column": 20,
       "evidence": "app/views/sales/orders/show.html.erb references Billing::Invoice",
+      "confidence": "high"
+    },
+    {
+      "id": "77184d44683ec2eee0ff4842",
+      "rule": "dependencies.privacy",
+      "message": "Billing::Invoice is private to billing",
+      "path": "lib/tasks/sales.rake",
+      "line": 3,
+      "column": 10,
+      "end_line": 3,
+      "end_column": 26,
+      "evidence": "lib/tasks/sales.rake references Billing::Invoice",
+      "confidence": "high"
+    },
+    {
+      "id": "a834fffb416dfe085ca4b85e",
+      "rule": "dependencies.privacy",
+      "message": "Billing::Invoice is private to billing",
+      "path": "test/models/sales/invoice_usage_test.rb",
+      "line": 6,
+      "column": 23,
+      "end_line": 6,
+      "end_column": 39,
+      "evidence": "Sales::InvoiceUsageTest references Billing::Invoice",
       "confidence": "high"
     }
   ]

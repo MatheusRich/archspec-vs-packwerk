@@ -1,4 +1,4 @@
-📦 Packwerk is inspecting 45 files
+📦 Packwerk is inspecting 49 files
 
 app/controllers/sales/orders_controller.rb:4:18
 Privacy violation: '::Billing::Invoice' is private to 'app/models/billing' but referenced from 'app/controllers/sales'.
@@ -100,6 +100,20 @@ Is there a public entrypoint in 'app/models/billing/app/public/' that you can us
 Inference details: this is a reference to ::Billing::Invoice which seems to be defined in app/models/billing/invoice.rb.
 To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
 
-14 offenses detected
+lib/tasks/sales.rake:3:9
+Privacy violation: '::Billing::Invoice' is private to 'app/models/billing' but referenced from '.'.
+Is there a public entrypoint in 'app/models/billing/app/public/' that you can use instead?
+
+Inference details: this is a reference to ::Billing::Invoice which seems to be defined in app/models/billing/invoice.rb.
+To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
+
+test/models/sales/invoice_usage_test.rb:6:22
+Privacy violation: '::Billing::Invoice' is private to 'app/models/billing' but referenced from '.'.
+Is there a public entrypoint in 'app/models/billing/app/public/' that you can use instead?
+
+Inference details: this is a reference to ::Billing::Invoice which seems to be defined in app/models/billing/invoice.rb.
+To receive help interpreting or resolving this error message, see: https://github.com/Shopify/packwerk/blob/main/TROUBLESHOOT.md#Troubleshooting-violations
+
+16 offenses detected
 
 No stale violations detected

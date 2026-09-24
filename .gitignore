@@ -3,7 +3,7 @@
 */log/
 */tmp/
 */storage/
-*/archspec_facts/
+*/archspec_facts*/
 .ruby-lsp/
 */config/master.key
 */config/credentials.yml.enc
