@@ -3,14 +3,14 @@
 How do ArchSpec and Packwerk compare as tools to enforce boundaries between the domains of a Rails app? This experiment runs both tools on the same app with the same rules. It compares what each tool catches, how fast it is, and how well its layout fits a normal Rails app.
 
 - **[ArchSpec](https://archspecrb.dev/)** with namespaced modules. Each domain is a Ruby namespace (`Billing`, `Sales`) in the standard Rails folders (`app/models/billing/`, `app/controllers/sales/`). ArchSpec checks the code with static analysis.
-- **[Packwerk](https://github.com/Shopify/packwerk)** with packwerk-extensions. Each domain is a package directory (`packs/billing/`) with a `package.yml`. The experiment also measures [pks](https://github.com/alexevanczuk/packs), a Rust implementation of the Packwerk checks.
+- **[Packwerk](https://github.com/Shopify/packwerk)** with packwerk-extensions. Each domain is a package: a directory with a `package.yml`. Packwerk accepts a `package.yml` in any directory, for example `app/models/billing/`, an in-repo engine or `lib/`. The `packs/` directory is a convention of [packs-rails](https://github.com/rubyatscale/packs-rails) and related tools, not of Packwerk. The experiment runs Packwerk on a `packs/` layout and on a plain Rails layout. It also measures [pks](https://github.com/alexevanczuk/packs), a Rust implementation of the Packwerk checks.
 
 ## Setup
 
 There are two versions of one small Rails app, with a Billing domain and a Sales domain:
 
-- `modules_app/` uses the modules layout. Its `Archspec.rb` declares `billing` and `sales` by namespace and adds the ERB views with `in:`.
-- `packs_app/` uses the Packwerk layout, with the same code in `packs/billing/` and `packs/sales/`.
+- `modules_app/` uses the modules layout. Its `Archspec.rb` declares `billing` and `sales` by namespace and adds the ERB views with `in:`. It also has a `package.yml` in each namespaced folder, to run Packwerk on this layout.
+- `packs_app/` uses the packs layout, with the same code in `packs/billing/` and `packs/sales/`.
 
 Both tools check the same rules. Sales can use Billing only through the public `Billing::Api`. Billing cannot use Sales. Each fixture file marks its case with a `# CASE` comment. The test set is hand-written, so it does not prove that either tool is complete. The case numbers have gaps, because some numbers were never used.
 
@@ -18,7 +18,7 @@ The speed tests use generated apps with 1,000 to 5,000 files. All results are fr
 
 ## Summary
 
-With an unreleased ArchSpec build, the two approaches catch the same violations. ArchSpec is better for the app, because the code stays in a plain Rails layout. Packwerk is better for the check itself: it is faster, it needs one command, and it is mature.
+With an unreleased ArchSpec build, the two approaches catch the same violations. ArchSpec is better for a plain Rails layout, because it needs less configuration there. Packwerk also runs on that layout. Packwerk is better for the check itself: it is faster, it needs one command, and it is mature.
 
 ### Detection is equal
 
@@ -29,10 +29,12 @@ Each tool catches 18 of the 20 violations in the test set, but ArchSpec needs tw
 
 Neither tool follows dynamic lookups such as `constantize`.
 
-### ArchSpec is better for the app
+### ArchSpec is better for a plain Rails layout
 
-- **Plain Rails.** A domain is a folder and a namespace in the standard Rails folders. Zeitwerk loads it with the default settings. Generators write to the correct folders, and `bin/rails test` finds the tests. A generator asks for confirmation only before it replaces an existing namespace file.
-- **Configuration.** One `Archspec.rb` file holds all rules. One line declares a domain by namespace, in all Rails folders. The public API can be a namespace. Packwerk needs a `package.yml` in each package directory.
+This section assumes that a plain Rails layout is a benefit. That is a preference, not a result of the experiment. The modules layout groups the code by domain, but by namespace: the files of a domain are in the standard Rails folders. Many teams prefer to keep each domain in one directory as the app grows, for example in `packs/`, in in-repo engines or in `app/packages/`. For those teams, the layout points in this section do not apply.
+
+- **Plain Rails.** A domain is a folder and a namespace in the standard Rails folders. Zeitwerk loads it with the default settings. Generators write to the correct folders, and `bin/rails test` finds the tests. A generator asks for confirmation only before it replaces an existing namespace file. Packwerk also runs on this layout, and catches 16 of 20 violations there (see [Each tool on the other layout](#each-tool-on-the-other-layout)).
+- **Configuration.** One `Archspec.rb` file holds all rules. One line declares a domain by namespace, in all Rails folders. The public API can be a namespace. On the modules layout, Packwerk needs a `package.yml` in each namespaced folder, so one domain is several packages. In `modules_app/`, Sales is four packages, and each package lists the same dependencies. For privacy, Packwerk needs a `# pack_public: true` comment in each public file or a `private_constants` list.
 - **Flexible components.** A component can be a namespace, a file glob, a list of constants or all subclasses of a class, and one class can be in several components. A Packwerk package is one directory. See [What a component can be](#what-a-component-can-be).
 - **More rules.** The ArchSpec presets for Rails (for example, "models must not depend on controllers") work together with the rules for each domain. ArchSpec also checks class-level rules that Packwerk does not have: forbidden method calls, method protocols and naming.
 - **Exact locations.** ArchSpec reports the correct line and column, also in ERB. In ERB files, Packwerk reports the wrong line and always column 1. For example, it reported references on lines 5 and 6 at `1:1` and `2:1`.
@@ -49,9 +51,9 @@ On the packs layout, most Rails tools need extra configuration: packs-rails, a t
 
 ### Recommendation
 
-For a small or mid-size app, use namespaced modules with ArchSpec. The layout stays plain Rails. In the benchmark, a full check takes 1.3s on 1,000 files and 3.5s on 2,500 files. These times are for `master` with file globs, without ERB and without `reflect`, so the recommended configuration is slower. `reflect` took 0.65s on the small fixture app, and there is no measurement on a large app. Wait for a release that includes association reflection and ERB support.
+For a small or mid-size app, use namespaced modules with ArchSpec. The layout stays plain Rails, with one line of configuration for each domain. In the benchmark, a full check takes 1.3s on 1,000 files and 3.5s on 2,500 files. These times are for `master` with file globs, without ERB and without `reflect`, so the recommended configuration is slower. `reflect` took 0.65s on the small fixture app, and there is no measurement on a large app. Wait for a release that includes association reflection and ERB support.
 
-For a large app that needs fast checks on each commit, or for an app that already uses packs, use Packwerk or pks.
+For a large app that needs fast checks on each commit, or for an app that keeps each domain in one directory (packs, in-repo engines or in-repo gems), use Packwerk or pks.
 
 ## Detection
 
@@ -229,6 +231,8 @@ A full check on Discourse with PR #37 took 2.96s, about the same as 1.1.0. PR #3
 
 The modules layout needs no change to Rails. A domain is a folder and a namespace, and Zeitwerk loads it with the default settings. The packs layout moves code out of the paths that Rails and its tools use.
 
+This section compares the modules layout only with the packs layout. Packwerk also works with other layouts that keep each domain in one directory, such as in-repo engines and in-repo gems. These layouts were not tested.
+
 [packs-rails](https://github.com/rubyatscale/packs-rails) 0.1.0 connects packs to Rails. It adds the directories of each pack to the Rails paths, and it has integrations for RSpec and FactoryBot. The third column shows the packs layout with packs-rails and without the manual autoload line.
 
 | Check | Modules layout | Packs layout | Packs layout with packs-rails |
@@ -249,6 +253,7 @@ Other tools that use the standard Rails paths were not tested. The checks in thi
 - The tools around packs: `code_ownership`, `danger-packwerk` (violations as PR comments), `rubocop-packs` and `visualize_packs`.
 - Gradual adoption on a large existing app, and false positives on real code. The test set has only five controls.
 - The maintenance status of Packwerk.
+- Packwerk on other layouts that keep each domain in one directory: in-repo engines, in-repo gems and `app/packages/`. An in-repo engine is a standard Rails feature, so the problems of the packs layout in [The modules layout is plain Rails](#the-modules-layout-is-plain-rails) possibly do not apply to it.
 
 ## Open items
 
@@ -293,7 +298,7 @@ The Gemfiles of the fixture apps use the `pr36` build. To use a different build,
 | Path | Contents |
 |---|---|
 | `modules_app/` | The modules layout, with `Archspec.rb` and the fixtures. It also has `package.yml` files, to run Packwerk on this layout. |
-| `packs_app/` | The Packwerk layout, with `packwerk.yml`, the `package.yml` files and an `Archspec.rb` for the same layout. |
+| `packs_app/` | The packs layout, with `packwerk.yml`, the `package.yml` files and an `Archspec.rb` for the same layout. |
 | `results/` | The output of `scripts/detect.sh` and `scripts/bench.sh`. For each ArchSpec run, the `.txt` file maps the violations to the `# CASE` comments. `_globs` is the run with extra globs (N1, N2), and `_constants` is the run with `public_api constants:` (N3). |
 | `patches/` | The fix for PR #36. It parses the Ruby code from ERB as a partial script. |
 | `scripts/gen_bench.rb` | Generates a benchmark app: `ruby scripts/gen_bench.rb DIR PACKS FILES`. It copies `packs_app/` without the N1 to N3 files and writes an `Archspec.rb` with the same rules as the `package.yml` files. `scripts/bench.sh` generates its apps in `bench/`. |
