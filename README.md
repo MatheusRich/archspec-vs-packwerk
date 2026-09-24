@@ -1,13 +1,20 @@
 # ArchSpec with namespaced modules as a replacement for Packwerk
 
-This repository compares two ways to enforce boundaries between the domains of a Rails app:
+How do ArchSpec and Packwerk compare as tools to enforce boundaries between the domains of a Rails app? This experiment runs both tools on the same app with the same rules. It compares what each tool catches, how fast it is, and how well its layout fits a normal Rails app.
 
-- **Namespaced modules with [ArchSpec](https://archspecrb.dev/).** Each domain is a Ruby namespace (`Billing`, `Sales`) in the standard Rails folders (`app/models/billing/`, `app/controllers/sales/`). ArchSpec checks the boundaries with static analysis.
-- **[Packwerk](https://github.com/Shopify/packwerk) with packwerk-extensions.** Each domain is a package directory (`packs/billing/`) with a `package.yml`. The comparison also measures [pks](https://github.com/alexevanczuk/packs), a Rust implementation of the Packwerk checks that reads the same configuration.
+- **[ArchSpec](https://archspecrb.dev/)** with namespaced modules. Each domain is a Ruby namespace (`Billing`, `Sales`) in the standard Rails folders (`app/models/billing/`, `app/controllers/sales/`). ArchSpec checks the code with static analysis.
+- **[Packwerk](https://github.com/Shopify/packwerk)** with packwerk-extensions. Each domain is a package directory (`packs/billing/`) with a `package.yml`. The experiment also measures [pks](https://github.com/alexevanczuk/packs), a Rust implementation of the Packwerk checks.
 
-The question: can the first approach replace Packwerk? This report compares what each tool catches, how fast it is, and how well it fits a normal Rails app.
+## Setup
 
-All results are from 2026-09-23, on one machine.
+There are two versions of one small Rails app, with a Billing domain and a Sales domain:
+
+- `modules_app/` uses the modules layout. Its `Archspec.rb` declares `billing` and `sales` by namespace and adds the ERB views with `in:`.
+- `packs_app/` uses the Packwerk layout, with the same code in `packs/billing/` and `packs/sales/`.
+
+Both tools check the same rules. Sales can use Billing only through the public `Billing::Api`. Billing cannot use Sales. Each fixture file marks its case with a `# CASE` comment. The test set is hand-written, so it does not prove that either tool is complete. The case numbers have gaps, because some numbers were never used.
+
+The speed tests use generated apps with 1,000 to 5,000 files. All results are from 2026-09-23, on one machine. The tool versions are in [Versions](#versions).
 
 ## Summary
 
@@ -44,24 +51,6 @@ On the packs layout, most Rails tools need extra configuration: packs-rails, a t
 For a small or mid-size app, use namespaced modules with ArchSpec. The layout stays plain Rails. In the benchmark, a full check takes 1.3s on 1,000 files and 3.5s on 2,500 files. These times are for `master` with file globs, without ERB and without `reflect`, so the recommended configuration is slower. `reflect` took 0.65s on the small fixture app, and there is no measurement on a large app. Wait for a release that includes association reflection and ERB support.
 
 For a large app that needs fast checks on each commit, or for an app that already uses packs, use Packwerk or pks.
-
-## Setup
-
-| Item | Version |
-|---|---|
-| Ruby | 3.4.6 (macOS, 14 CPUs: 10 performance and 4 efficiency cores) |
-| Rails | 8.1.3.1 |
-| ArchSpec | 1.1.0 (released), `master` at `207381e`, and `master` with PR #36 plus a fix (`patches/erb-partial-script.patch`) |
-| Packwerk | 3.3.1, with packwerk-extensions 0.3.0 for privacy checks |
-| pks | 0.2.40 |
-| Herb | 0.10.4 (PR #36 uses it to read ERB) |
-
-There are two versions of one small Rails app:
-
-- `modules_app/` uses the modules layout. Its `Archspec.rb` declares `billing` and `sales` by namespace and adds the ERB views with `in:`. `sales` can only use `billing`. `billing` cannot use `sales`. Only the `Billing::Api` namespace is public.
-- `packs_app/` uses the Packwerk layout, with the same code in `packs/billing/` and `packs/sales/`. `packs/sales` depends on `packs/billing`. `packs/billing` enforces privacy, and its public folder holds `Billing::Api`.
-
-Each fixture file marks its case with a `# CASE` comment. The test set is hand-written, so it does not prove that either tool is complete. The case numbers have gaps, because some numbers were never used.
 
 ## Detection
 
@@ -232,6 +221,19 @@ Other tools that use the standard Rails paths were not tested. The checks in thi
 - There is no measurement of a real app that uses Packwerk. The torture apps (Discourse, Mastodon, Fizzy) do not use Packwerk.
 
 ## Reproduce
+
+### Versions
+
+| Item | Version |
+|---|---|
+| Ruby | 3.4.6 (macOS, 14 CPUs: 10 performance and 4 efficiency cores) |
+| Rails | 8.1.3.1 |
+| ArchSpec | 1.1.0 (released), `master` at `207381e`, and `master` with PR #36 plus a fix (`patches/erb-partial-script.patch`) |
+| Packwerk | 3.3.1, with packwerk-extensions 0.3.0 for privacy checks |
+| pks | 0.2.40 |
+| Herb | 0.10.4 (PR #36 uses it to read ERB) |
+
+### Steps
 
 The scripts need Ruby 3.4.6, Bundler and network access to GitHub. The benchmark also needs the `pks` binary.
 
