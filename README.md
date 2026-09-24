@@ -33,6 +33,7 @@ Neither tool follows dynamic lookups such as `constantize`.
 
 - **Plain Rails.** A domain is a folder and a namespace in the standard Rails folders. Zeitwerk loads it with the default settings. Generators write to the correct folders, and `bin/rails test` finds the tests. A generator asks for confirmation only before it replaces an existing namespace file.
 - **Configuration.** One `Archspec.rb` file holds all rules. One line declares a domain by namespace, in all Rails folders. The public API can be a namespace. Packwerk needs a `package.yml` in each package directory.
+- **Flexible components.** A component can be a namespace, a file glob, a list of constants or all subclasses of a class, and one class can be in several components. A Packwerk package is one directory. See [What a component can be](#what-a-component-can-be).
 - **More rules.** The ArchSpec presets for Rails (for example, "models must not depend on controllers") work together with the rules for each domain. ArchSpec also checks class-level rules that Packwerk does not have: forbidden method calls, method protocols and naming.
 - **Exact locations.** ArchSpec reports the correct line and column, also in ERB. In ERB files, Packwerk reports the wrong line and always column 1. For example, it reported references on lines 5 and 6 at `1:1` and `2:1`.
 
@@ -119,6 +120,42 @@ PR #36 extracts the Ruby code from each template with `Herb.extract_ruby` and pa
 `Herb.extract_ruby(comments: true)` is not an alternative. It keeps ERB comments as Ruby comments, and a Ruby comment continues to the end of the line. So `<%# note %><%= User.count %>` loses the reference to `User`, with no error. The separate comment pass in PR #36 is correct.
 
 The generated benchmark apps have no templates, so there is no measurement of the ERB pass speed.
+
+## What a component can be
+
+In Packwerk, a package is a directory, and each file is in exactly one package: the one with the nearest `package.yml`. In ArchSpec, a component is a set of constants and files. The selectors combine, and one class can be in several components.
+
+| Selector | Example | Members |
+|---|---|---|
+| `namespace:` | `namespace: "Billing"` | `Billing` and every constant in it, in any folder |
+| `in:` | `in: "app/views/billing/**/*.erb"` | The files that match the glob |
+| `except:` | `except: "app/models/billing/legacy/**/*.rb"` | Removes the matching files from the component |
+| `constants:` | `constants: ["Billing::Api", "Billing::Gateway"]` | Exact constants |
+| `descendants_of:` | `descendants_of: "ApplicationJob"` | Every subclass, in any folder and any namespace |
+
+For example, these two components are not directories:
+
+```ruby
+# Every subclass of Billing::Gateway, in any folder and any namespace.
+component :gateways, descendants_of: "Billing::Gateway"
+gateways.can_only_be_used_by :billing
+
+# Every job, in every domain. A job is also in its domain component.
+component :jobs, descendants_of: "ApplicationJob"
+jobs.cannot_call :deliver_now, because: "jobs run in the background already, so use deliver_later"
+```
+
+With the `Archspec.rb` of `modules_app/`, these rules, and `Billing::Gateway` added to the public API:
+
+| Code | ArchSpec | Packwerk |
+|---|---|---|
+| `lib/stripe_gateway.rb` defines `StripeGateway < Billing::Gateway`, and `Sales::ExpressCheckout` calls `StripeGateway.new` | Flagged: "gateways may only be used by billing, not sales" | Not flagged. `lib/` is in the root package, and Sales depends on the root package |
+| `Sales::ReceiptJob < ApplicationJob` calls `deliver_now` | Flagged: "jobs must not call #deliver_now" | Not flagged. Packwerk checks only references between packages |
+| `Billing::RefundNotice`, which is not a job, calls `deliver_now` | Not flagged | Not flagged |
+
+`Sales::ReceiptJob` is in two components: `sales` by namespace and `jobs` by superclass. The rules of both components apply to it. In Packwerk, the gateway rule needs the gateways in their own package directory. The job rule has no equivalent in Packwerk.
+
+These examples are not in the fixture apps.
 
 ## Speed
 
